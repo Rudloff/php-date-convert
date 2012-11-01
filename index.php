@@ -1,3 +1,10 @@
+<!Doctype HTML>
+    <html>
+    <head>
+    <meta charset="UTF-8" />
+    <title>Convertisseur de dates</title>
+    </head>
+    <body>
 <?php
 /**
  * Convert all dates from a text
@@ -59,10 +66,27 @@ function getDates ($format, $string)
     }
     return $dates;
 }
-if (isset($_POST["string"])) {
+if (isset($_POST["format"])) {
+    $string = urldecode($_POST["string"]);
+    foreach ($_POST as $var=>$value) {
+        if ($value=="on") {
+            $var=unserialize(urldecode($var));
+            $string=str_replace(
+                $var[0], strftime($_POST["format"], strtotime($var[1])), $string
+            );
+        }
+    }
+    ?>
+    <label for="string">Résultat :</label><br/>
+    <textarea readonly autofocus id="string" cols="100" rows="25"><?php print(
+        $string
+    ); ?></textarea>
+    <br/>
+    <a href="index.php">Recommencer</a>
+    <?php
+} else if (isset($_POST["string"])) {
     $dates=array();
     $string=$_POST["string"];
-    $format=$_POST["format"];
     $regexps=array(
         array("|\d\d\d\d-\d\d-\d\d|", "us"),
         array("|(\d\d?)\h(\w*)\h(\d\d\d\d)|u", "fr"),
@@ -75,69 +99,79 @@ if (isset($_POST["string"])) {
             )
         );
     }
-    ?>
-    <table>
-        <tr><th></th><th>Jour</th><th>Mois</th><th>Année</th></tr>
-    <?php
-    foreach ($dates as $date) {
-        $info=(getdate(strtotime($date[1])));
+    if (empty($dates)) {
         ?>
-        <tr>
-            <th>
+        <p>Aucune date trouvée</p>
+        <a href="index.php">Recommencer</a>
         <?php
-        print($date[0]);
+    } else {
         ?>
-        </th>
-        <td>
+        <form method="POST">
+        <table>
+            <tr><th></th><th></th><th>Jour</th><th>Mois</th><th>Année</th></tr>
         <?php
-        print($info["mday"]);
+        foreach ($dates as $date) {
+            $info=(getdate(strtotime($date[1])));
+            ?>
+            <tr>
+                <td>
+                <?php
+                    print(
+                        "<input type='checkbox' checked='checked' name='".
+                        urlencode(serialize($date))."' />"
+                    );
+                ?>
+                </td>
+                <th>
+            <?php
+            print($date[0]);
+            ?>
+            </th>
+            <td>
+            <?php
+            print($info["mday"]);
+            ?>
+            </td>
+            <td>
+            <?php
+            print($info["month"]." (".$info["mon"].")");
+            ?>
+            </td>
+            <td>
+            <?php
+            print($info["year"]);
+            ?>
+            </td>
+            </tr>
+            <?php
+        }
         ?>
-        </td>
-        <td>
+        </table>
+        <label for="format">Format :</label>
+        <select id="format" name="format">
+        <option value="%e %B %Y">1 janvier 2012</option>
+        <option value="{{date|%e|%B|%Y}}">{{date|1|janvier|2012}}</option>
+        </select>
         <?php
-        print($info["month"]." (".$info["mon"].")");
+            print(
+                "<input type='hidden' name='string' value='".
+                urlencode($string)."' />"
+            );
         ?>
-        </td>
-        <td>
-        <?php
-        print($info["year"]);
-        ?>
-        </td>
-        </tr>
+        <input type="submit" />
+        </form>
         <?php
     }
-    ?>
-    </table>
-    <?php
-    /*$string=str_replace(
-            $match[0], strftime($format, strtotime($match[0])), $string
-        );*/
 } else {
-    $string="";
     ?>
-    <!Doctype HTML>
-    <html>
-    <head>
-    <meta charset="UTF-8" />
-    <title>Convertisseur de dates</title>
-    </head>
-    <body>
     <form method="POST">
-        <p>Les dates au format <i>2012-01-01</i> seront converties.</p>
-    <textarea id="string" name="string" cols="100" rows="25" required>
-    <?php print($string) ?>
-    </textarea>
-    <br/>
-    <label for="format">Format :</label>
-    <select id="format" name="format">
-    <option value="%e %B %Y">1 janvier 2012</option>
-    <option value="{{date|%e|%B|%Y}}">{{date|1|janvier|2012}}</option>
-    </select>
+        <label for="string">Entrez le texte à analyser :</label><br/>
+    <textarea id="string" name="string" cols="100" rows="25" required></textarea>    
     <br/>
     <input type="submit" />
     </form>
-    </body>
-    </html>
     <?php
 }
 ?>
+</body>
+</html>
