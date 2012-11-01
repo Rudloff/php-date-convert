@@ -8,6 +8,7 @@
 <?php
 /**
  * Convert all dates from a text
+ * Warning: you must use a 64 bit OS to parse dates prior to 1901
  * 
  * PHP Version 5.3.10
  * 
@@ -22,16 +23,19 @@ date_default_timezone_set("Europe/Paris");
 $months=array(
     "janvier"=>1,
     "février"=>2,
+    "fevrier"=>2,
     "mars"=>3,
     "avril"=>4,
     "mai"=>5,
     "juin"=>6,
     "juillet"=>7,
     "août"=>8,
+    "aout"=>8,
     "septembre"=>9,
     "octobre"=>10,
     "novembre"=>11,
-    "décembre"=>12
+    "décembre"=>12,
+    "decembre"=>12
 );
 /**
  * Retrieve dates in a string
@@ -57,7 +61,7 @@ function getDates ($format, $string)
             break;
         case "fr" :
             $dates[]=array(
-                $match[0], $match[3]."-".$months[$match[2]]."-".$match[1]
+                $match[0], $match[3]."-".$months[$match[2]]."-".intval($match[1])
             );
             break;
         default :
@@ -89,7 +93,7 @@ if (isset($_POST["format"])) {
     $string=$_POST["string"];
     $regexps=array(
         array("|\d\d\d\d-\d\d-\d\d|", "us"),
-        array("|(\d\d?)\h(\w*)\h(\d\d\d\d)|u", "fr"),
+        array("|(\d\d?e?r?)\h(\w*)\h(\d\d\d\d)|u", "fr"),
         array("|(\d\d?)/(\d\d?)/(\d\d\d\d)|", "frnum")
     ); 
     foreach ($regexps as $regexp) {
